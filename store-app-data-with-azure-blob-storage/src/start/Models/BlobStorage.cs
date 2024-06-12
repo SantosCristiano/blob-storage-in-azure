@@ -28,8 +28,11 @@ namespace FileUploader.Models
 
         public Task Save(Stream fileStream, string name)
         {
-            // Add Save code here
-            throw new NotImplementedException();
+            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(storageConfig.ConnectionString);
+            CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
+            CloudBlobContainer container = blobClient.GetContainerReference(storageConfig.FileContainerName);
+            CloudBlockBlob blockBlob = container.GetBlockBlobReference(name);
+            return blockBlob.UploadFromStreamAsync(fileStream);
         }
 
         public async Task<IEnumerable<string>> GetNames()
@@ -58,8 +61,10 @@ namespace FileUploader.Models
 
         public Task<Stream> Load(string name)
         {
-            // Add Load code here
-            throw new NotImplementedException();
+            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(storageConfig.ConnectionString);
+            CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
+            CloudBlobContainer container = blobClient.GetContainerReference(storageConfig.FileContainerName);
+            return container.GetBlobReference(name).OpenReadAsync();
         }
     }
 }
