@@ -32,10 +32,28 @@ namespace FileUploader.Models
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<string>> GetNames()
+        public async Task<IEnumerable<string>> GetNames()
         {
-            // Add GetNames code here
-            throw new NotImplementedException();
+            List<string> names = new List<string>();
+
+            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(storageConfig.ConnectionString);
+            CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
+            CloudBlobContainer container = blobClient.GetContainerReference(storageConfig.FileContainerName);
+
+            BlobContinuationToken continuationToken = null;
+            BlobResultSegment resultSegment = null;
+
+            do
+            {
+                resultSegment = await container.ListBlobsSegmentedAsync(continuationToken);
+
+                // Get the name of each blob
+                name.AddRange(resultSegment.Results.ofType<ICloudBlob>().Select(b => b.Name));
+
+                continuationToken = resultSegment.ContinuationToken;
+            } while (continuationToken != null);
+
+            return names;
         }
 
         public Task<Stream> Load(string name)
