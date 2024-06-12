@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
+using System.Linq;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace FileUploader.Models
 {
@@ -17,8 +20,10 @@ namespace FileUploader.Models
 
         public Task Initialize()
         {
-            // Add Initialize code here
-            throw new NotImplementedException();
+            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(storageConfig.ConnectionString);
+            CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
+            CloudBlobContainer container = blobClient.GetContainerReference(storageConfig.FileContainerName);
+            return container.CreateIfNotExistsAsync();
         }
 
         public Task Save(Stream fileStream, string name)
